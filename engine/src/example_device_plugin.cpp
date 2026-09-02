@@ -97,8 +97,6 @@ namespace Example {
     }
 }
 
-DARTWIC_PLUGIN_DECLARE_SDK_ABI()
-
 DARTWIC_PLUGIN_EXPORT DARTWIC::Plugins::BasePlugin* createPlugin(
     nlohmann::json cfg,
     DARTWIC::API::SDK_API* api

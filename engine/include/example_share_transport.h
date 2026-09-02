@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sdk_api.h>
+#include <dartwic/share/DARTWICShareTransport.h>
 
 #include <cstdint>
 #include <memory>

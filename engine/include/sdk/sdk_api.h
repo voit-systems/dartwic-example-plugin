@@ -137,52 +137,6 @@ namespace DARTWIC::API {
         bool required = false;
     };
 
-    /**
-     * Driver-host periodic task ABI.
-     *
-     * @dartwic-reference-exclude driver-descoped
-     */
-    struct DriverPeriodicTaskRegistration {
-        const char* task_type = nullptr;
-        const char* task_name = nullptr;
-        void* context = nullptr;
-        void (*on_start)(void* context, double elapsed_seconds) = nullptr;
-        void (*on_task)(void* context, double elapsed_seconds) = nullptr;
-        void (*on_end)(void* context, double elapsed_seconds) = nullptr;
-    };
-
-    /**
-     * Driver-host state-machine task ABI.
-     *
-     * @dartwic-reference-exclude driver-descoped
-     */
-    struct DriverStateMachineTaskRegistration {
-        const char* task_type = nullptr;
-        const char* task_name = nullptr;
-        const char* states_json = nullptr;
-        void* context = nullptr;
-        void (*on_start)(void* context, double elapsed_seconds) = nullptr;
-        void (*on_task)(void* context, double elapsed_seconds) = nullptr;
-        void (*on_end)(void* context, double elapsed_seconds) = nullptr;
-    };
-
-    /**
-     * Driver runtime host ABI. This ABI accepts only flat channel names and typed fields.
-     *
-     * @dartwic-reference-exclude driver-descoped
-     */
-    struct DriverPluginHostApi {
-        void* host_context = nullptr;
-        double (*query_channel_value)(void* host_context, const char* channel_name, double default_value) = nullptr;
-        void (*upsert_channel_value)(void* host_context, const char* channel_name, double value) = nullptr;
-        bool (*register_periodic_task)(void* host_context, const DriverPeriodicTaskRegistration* registration) = nullptr;
-        bool (*register_state_machine_task)(void* host_context, const DriverStateMachineTaskRegistration* registration) = nullptr;
-        bool (*register_dcode_function)(void* host_context, const char* function_name, const char* doc, const char* input_arguments_json, const char* output_arguments_json, void* function_context, const char* (*callback)(void* function_context, const char* payload_json)) = nullptr;
-        const char* (*call_dcode_function)(void* host_context, const char* function_name, const char* payload_json) = nullptr;
-        void (*free_json_string)(void* host_context, const char* value) = nullptr;
-        void (*log_message)(void* host_context, const char* message) = nullptr;
-    };
-
     struct TaskTypeDefinition;
 
     /**
@@ -227,6 +181,7 @@ namespace DARTWIC::API {
         // Keep new virtual functions appended so plugins built against the previous
         // TaskRuntime vtable retain the indices of all existing functions.
         virtual void setFixedInputChannels(std::vector<std::string> channels) = 0;
+        virtual void recordWorkerCycle() = 0;
 
         template <typename T>
         void setTypedRuntimeContext(const std::string& key, const std::shared_ptr<T>& value) {
@@ -564,6 +519,29 @@ namespace DARTWIC::API {
             (void)event_id;
             (void)status;
             return false;
+        }
+
+        /** Opens or updates a named interface workflow and returns its request descriptor. */
+        virtual nlohmann::json requestInterfaceUi(
+            const std::string& ui_id,
+            nlohmann::json payload,
+            nlohmann::json options = nlohmann::json::object()) {
+            (void)ui_id;
+            (void)payload;
+            (void)options;
+            return nlohmann::json::object();
+        }
+
+        /** Returns the current status and result for a named interface workflow request. */
+        virtual nlohmann::json getInterfaceUiRequest(const std::string& request_id) {
+            (void)request_id;
+            return nlohmann::json::object();
+        }
+
+        /** Announces a device found by a plugin-owned discovery loop. */
+        virtual nlohmann::json announceDiscoveredDevice(nlohmann::json candidate) {
+            (void)candidate;
+            return nlohmann::json::object();
         }
     };
 }
